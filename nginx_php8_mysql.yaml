@@ -1,0 +1,115 @@
+---
+- name: Install and configure dependencies
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install software-properties-common
+      apt:
+        name: software-properties-common
+        state: present
+
+    - name: Update apt cache (after adding PPA)
+      apt:
+        update_cache: yes
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Install PHP and required extensions
+      apt:
+        name:
+          - php
+          - php-cli
+          - php-fpm
+          - php-mysql
+          - php-curl
+          - php-gd
+          - php-mbstring
+          - php-xml
+          - php-zip
+        state: present
+
+    - name: Install Composer
+      get_url:
+        url: https://getcomposer.org/installer
+        dest: /tmp/composer-setup.php
+      register: composer_setup
+
+    - name: Run Composer installer
+      command: php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      when: composer_setup.changed
+
+    - name: Remove Composer installer
+      file:
+        path: /tmp/composer-setup.php
+        state: absent
+
+    - name: Install MySQL Server
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: Ensure MySQL is running and enabled on boot
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: Install PyMySQL (required for MySQL tasks)
+      apt:
+        name: python3-pymysql
+        state: present    
+
+    - name: Set MySQL root password
+      mysql_user:
+        login_user: root
+        login_password: ""  # Leave empty if no root password is set
+        name: root
+        password: "{password}"  # Replace with your desired root password
+        host: localhost
+        check_implicit_admin: yes
+
+    - name: Remove anonymous users
+      mysql_user:
+        login_user: root
+        login_password: "{password}"
+        user: ""
+        host: ""
+        state: absent
+
+    - name: Disallow remote root login
+      mysql_user:
+        login_user: root
+        login_password: "{password}"
+        user: root
+        host: "%"
+        state: absent
+
+    - name: Remove test database
+      mysql_db:
+        login_user: root
+        login_password: "{password}"
+        name: test
+        state: absent
+
+    - name: Reload privilege tables
+      mysql_query:
+        login_user: root
+        login_password: "{password}"
+        query: "FLUSH PRIVILEGES"
+
+    - name: Restart PHP-FPM
+      service:
+        name: php8.2-fpm
+        state: restarted
+
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
