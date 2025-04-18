@@ -1,3 +1,4 @@
 1. RUNNING A PLAYBOOK
 
 ansible-playbook -i hosts --private-key=~/{key_location} {playbook_name}.yml -u {server_user} --become
+ansible-playbook -i hosts --private-key=~/maswali-pesa-ansible/keys/questions_management_portal.pem install_dependencies.yml -u root --become

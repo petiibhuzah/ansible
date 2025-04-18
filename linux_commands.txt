@@ -1,0 +1,3 @@
+CHANGE THE PERMISSION OF THE KEY FILE
+
+chmod 600 challenges_management_portal.pem
