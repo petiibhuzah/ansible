@@ -1,3 +1,10 @@
 CHANGE THE PERMISSION OF THE KEY FILE
 
 chmod 600 challenges_management_portal.pem
+
+THEN CHANGE THE IP ADDRESS IN HOSTS FILE nano hosts [hosts must be in same file as the ansible yaml file]
+
+>> Content
+
+[webserver]
+165.22.182.40
